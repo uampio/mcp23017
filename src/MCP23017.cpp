@@ -1,4 +1,5 @@
 #include "MCP23017.h"
+#include "mbed.h"
 
 MCP23017::MCP23017(uint8_t address, TwoWire& bus) {
 	_deviceAddr = address;
@@ -118,16 +119,21 @@ uint16_t MCP23017::read()
 
 void MCP23017::writeRegister(MCP23017Register reg, uint8_t value)
 {
+	uint8_t reg_ = static_cast<uint8_t>(reg);
+
 	_bus->beginTransmission(_deviceAddr);
-	_bus->write(static_cast<uint8_t>(reg));
+	_bus->write(reg_);
 	_bus->write(value);
 	_bus->endTransmission();
+
 }
 
 void MCP23017::writeRegister(MCP23017Register reg, uint8_t portA, uint8_t portB)
 {
+	uint8_t reg_ = static_cast<uint8_t>(reg);
+
 	_bus->beginTransmission(_deviceAddr);
-	_bus->write(static_cast<uint8_t>(reg));
+	_bus->write(reg_);
 	_bus->write(portA);
 	_bus->write(portB);
 	_bus->endTransmission();
@@ -136,21 +142,29 @@ void MCP23017::writeRegister(MCP23017Register reg, uint8_t portA, uint8_t portB)
 
 uint8_t MCP23017::readRegister(MCP23017Register reg)
 {
+	uint8_t reg_ = static_cast<uint8_t>(reg);
+
 	_bus->beginTransmission(_deviceAddr);
-	_bus->write(static_cast<uint8_t>(reg));
-	_bus->endTransmission();
-	_bus->requestFrom(_deviceAddr, (uint8_t)1);
-	return _bus->read();
+	_bus->write(reg_);
+	if (_bus->endTransmission() == 0) { 
+		_bus->requestFrom(_deviceAddr, (uint8_t)1);
+		return _bus->read();
+	}
+	return 0;
+	
 }
 
 void MCP23017::readRegister(MCP23017Register reg, uint8_t& portA, uint8_t& portB)
 {
+	uint8_t reg_ = static_cast<uint8_t>(reg);
+
 	_bus->beginTransmission(_deviceAddr);
-	_bus->write(static_cast<uint8_t>(reg));
-	_bus->endTransmission();
-	_bus->requestFrom(_deviceAddr, (uint8_t)2);
-	portA = _bus->read();
-	portB = _bus->read();
+	_bus->write(reg_);
+	if (_bus->endTransmission() == 0) { 
+		_bus->requestFrom(_deviceAddr, (uint8_t)2);
+		portA = _bus->read();
+		portB = _bus->read();
+	}
 }
 
 #ifdef _MCP23017_INTERRUPT_SUPPORT_
